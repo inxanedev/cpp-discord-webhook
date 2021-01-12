@@ -7,8 +7,9 @@ DiscordWebhook::DiscordWebhook(const char* webhook_url) {
     curl = curl_easy_init();
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, webhook_url);
-        curl_slist* headers = NULL;
-        headers = curl_slist_append(headers, "Content-Type: application/json");
+
+        // Discord webhooks accept json, so we set the content-type to json data.
+        curl_slist* headers = curl_slist_append(NULL, "Content-Type: application/json");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
     } else {
         std::cerr << "Error: curl_easy_init() returned NULL pointer" << std::endl;
@@ -21,6 +22,10 @@ DiscordWebhook::~DiscordWebhook() {
 }
 
 void DiscordWebhook::send_message(const char* message) {
+    // The POST json data must be in this format:
+    // {
+    //      "content": "<MESSAGE HERE>"
+    // }
     std::string json = std::string("{\"content\": \"") + message + "\"}";
     curl_easy_setopt(curl, CURLOPT_POSTFIELDS, json.c_str());
 
